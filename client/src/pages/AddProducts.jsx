@@ -16,8 +16,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  IconButton
 } from "@mui/material";
+import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 
 export default function AddProducts() {
   const [name, setName] = useState("");
@@ -25,6 +27,7 @@ export default function AddProducts() {
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
   const [products, setProducts] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   const fetchProducts = async () => {
     const res = await api.get("/products");
@@ -42,9 +45,16 @@ export default function AddProducts() {
     formData.append("name", name);
     formData.append("quantity", quantity);
     formData.append("price", price);
-    formData.append("image", image);
+    if (image) {
+      formData.append("image", image);
+    }
 
-    await api.post("/products", formData);
+    if (editingId) {
+      await api.put(`/products/${editingId}`, formData);
+      setEditingId(null);
+    } else {
+      await api.post("/products", formData);
+    }
 
     setName("");
     setQuantity("");
@@ -52,6 +62,29 @@ export default function AddProducts() {
     setImage(null);
 
     fetchProducts();
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      await api.delete(`/products/${id}`);
+      fetchProducts();
+    }
+  };
+
+  const handleEdit = (product) => {
+    setName(product.name);
+    setQuantity(product.quantity);
+    setPrice(product.price);
+    setImage(null);
+    setEditingId(product._id);
+  };
+
+  const handleCancel = () => {
+    setName("");
+    setQuantity("");
+    setPrice("");
+    setImage(null);
+    setEditingId(null);
   };
 
   return (
@@ -123,8 +156,19 @@ export default function AddProducts() {
                 fullWidth
                 sx={{ mt: 3 }}
               >
-                Submit
+                {editingId ? "Update Product" : "Submit"}
               </Button>
+
+              {editingId && (
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+              )}
             </Box>
           </CardContent>
         </Card>
@@ -144,6 +188,7 @@ export default function AddProducts() {
                 <TableCell><b>Quantity</b></TableCell>
                 <TableCell><b>Price</b></TableCell>
                 <TableCell><b>Image</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
               </TableRow>
             </TableHead>
 
@@ -156,11 +201,29 @@ export default function AddProducts() {
                   <TableCell>
                     {p.image && (
                       <img
-                        src={`http://ec2-100-53-18-75.compute-1.amazonaws.com:5000/uploads/${p.image}`}
+                        src={`http://ec2-3-108-67-162.ap-south-1.compute.amazonaws.com:5000/uploads/${p.image}`}
                         width="90"
                         style={{ borderRadius: 4 }}
                       />
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => handleEdit(p)}
+                      title="Edit"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(p._id)}
+                      title="Delete"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
