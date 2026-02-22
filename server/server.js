@@ -12,7 +12,7 @@ app.use("/uploads", express.static("uploads"));
 
 mongoose
   .connect(process.env.MONGO_URL)
-  .then(() => console.log("Local MongoDB Connected"))
+  .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error("MongoDB Error:", err));
 
 app.use("/api/products", productRoutes);
