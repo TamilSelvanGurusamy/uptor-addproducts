@@ -156,7 +156,7 @@ export default function AddProducts() {
                   <TableCell>
                     {p.image && (
                       <img
-                        src={`http://localhost:5000/uploads/${p.image}`}
+                        src={`http://ec2-100-53-18-75.compute-1.amazonaws.com:5000/uploads/${p.image}`}
                         width="90"
                         style={{ borderRadius: 4 }}
                       />
